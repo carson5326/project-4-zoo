@@ -1,0 +1,15 @@
+==129241==LeakSanitizer has encountered a fatal error.
+==129241==HINT: For debugging, try setting environment variable LSAN_OPTIONS=verbosity=1:log_threads=1
+==129241==HINT: LeakSanitizer does not work under ptrace (strace, gdb, etc)
+e; _Allocator = 
+    std::allocator<Zoo::coordinate>; std::debug::vector<_Tp, 
+    _Allocator>::reference = Zoo::coordinate&; std::debug::vector<_Tp, 
+    _Allocator>::size_type = long unsigned int]
+
+Error: attempt to subscript container with out-of-bounds index 11, but 
+container only holds 11 elements.
+
+Objects involved in the operation:
+    sequence "this" @ 0x7fffffffdd08 {
+      type = std::debug::vector<Zoo::coordinate, std::allocator<Zoo::coordinate> >;
+    }
