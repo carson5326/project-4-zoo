@@ -64,7 +64,8 @@ void Zoo::readCoordinates() {
   while (std::cin >> x) {
     std::cin >> y;
     // Border if x or y is 0
-    if (x == 0 || y == 0) {
+    //
+    if ((y == 0 && x <= 0) || (x == 0 && y <= 0)) {
       coordinate cord(x, y, WALL);
       vertices.push_back(cord);
     } else if (x < 0 && y < 0) {
@@ -136,37 +137,37 @@ void Zoo::solveMST() {
     // has teh smlalest value of d
     int smallestIndex = -1;
     double smallestDistance = -1;
-    for (int j = 0; j < static_cast<int>(NodeCount); j++) {
+    for (size_t j = 0; j < NodeCount; j++) {
       // If smallestDistance is unitalized
       if (smallestDistance == -1 && !primTable[j].k) {
-        smallestIndex = j;
+        smallestIndex = static_cast<int>(j);
         smallestDistance = primTable[j].distance;
       } else if (!primTable[j].k && primTable[j].distance < smallestDistance) {
-        smallestIndex = j;
+        smallestIndex = static_cast<int>(j);
         smallestDistance = primTable[j].distance;
       }
     }
     if (smallestIndex == -1)
       break;
     // 3. Set the value of k for this vertex to true.
-    primTable[smallestIndex].k = true;
+    primTable[static_cast<size_t>(smallestIndex)].k = true;
     //! add to total weight, This might not work.
-    weightTotal += primTable[smallestIndex].distance;
+    weightTotal += primTable[static_cast<size_t>(smallestIndex)].distance;
     // 4. For each vertex w adjact to v for which kw is false, check whether dw
     // is greater than the edge weight that connects v and w. If it is, set d to
     // the weight of thee edge that connects v and w, and set p to vertex v.
-    int count = 0;
+    //int count = 0; FORGOT WHAT THESE ARE FOR
     for (size_t a = 0; a < NodeCount; a++) {
       // check that the vertice is false, and if the distance is less than
       if (!primTable[a].k) {
-        double distance = checkDistance(smallestIndex, a);
+        double distance = checkDistance(static_cast<size_t>(smallestIndex), a);
         // Checks that is valid and if so it is less than current distance. If
         // so change distance and change index.
         if (distance != -1 && distance < primTable[a].distance) {
           primTable[a].distance = distance;
           primTable[a].index = smallestIndex;
-        } else if (distance != -1)
-          count++;
+        } //else if (distance != -1)
+          //count++; FORGOT WHAT THESE ARE FOR
       }
     }
     // returns error if there was no adjacent .
@@ -176,10 +177,10 @@ void Zoo::solveMST() {
 void Zoo::printMST() {
   std::cout << std::fixed << std::setprecision(2) << weightTotal << "\n";
   for (int32_t i = 1; i < static_cast<int32_t>(NodeCount); i++) {
-    if (i < primTable[i].index)
-      std::cout << i << " " << primTable[i].index << "\n";
+    if (i < primTable[static_cast<size_t>(i)].index)
+      std::cout << i << " " << primTable[static_cast<size_t>(i)].index << "\n";
     else
-      std::cout << primTable[i].index << " " << i << "\n";
+      std::cout << primTable[static_cast<size_t>(i)].index << " " << i << "\n";
   }
 }
 
@@ -190,7 +191,7 @@ void Zoo::printFASTTSP() {
   curr = greedyNearest[0].index;
   while (curr != 0) {
     std::cout << " " << curr;
-    curr = greedyNearest[curr].index;
+    curr = greedyNearest[static_cast<size_t>(curr)].index;
   }
   std::cout << "\n";
 }
@@ -244,34 +245,42 @@ void Zoo::partB() {
   // 4. Find the best place to insert vertexx k into the partial tour to
   // minimize cost
   int size = 2;
-  double minDistance;
-  int32_t minIndex;
+  double minDistance = -1;
+  int32_t minIndex = -1;
   for (int j = 2; j < static_cast<int>(NodeCount); j++) {
     // Loops through all the possible options
     for (int i = 0; i < size; i++) {
-      double totalDistance = Euclerian(j, i) +
-                             Euclerian(j, greedyNearest[i].index) -
-                             Euclerian(i, greedyNearest[i].index);
+      //Calculate the minDistance it would be if you were to reconnect. First connection between where your checking and new vertex. Second: vertex distance from where the 
+      //where you checking is point to and new vertex.
+      double totalDistance = Euclerian(static_cast<size_t>(j), static_cast<size_t>(i)) +
+                             Euclerian(static_cast<size_t>(j), static_cast<size_t>(greedyNearest[static_cast<size_t>(i)].index)) - greedyNearest[static_cast<size_t>(i)].distance;
+                             //Euclerian(static_cast<size_t>(i), static_cast<size_t>(greedyNearest[static_cast<size_t>(i)].index));
+      //Make sure a vertex cant create a path to self
       if (i != j) {
+        //Initalize the first value
         if (i == 0) {
           minDistance = totalDistance;
           minIndex = i;
         }
-        if (minDistance > totalDistance) {
+        //Find the smallest Distance.
+        else if (minDistance > totalDistance) {
           minDistance = totalDistance;
           minIndex = i;
         }
       }
     }
-    greedyNearest[j].index = greedyNearest[minIndex].index;
-    greedyNearest[j].distance = Euclerian(j, greedyNearest[j].index);
-    greedyNearest[j].k = true;
-
-    greedyNearest[minIndex].index = j;
-    greedyNearest[minIndex].distance = Euclerian(minIndex, j);
+      size++;
+    //Now connect everything after finding the smallest Distance.
+    //Start by setting the values of the vertex
+    greedyNearest[static_cast<size_t>(j)].index = greedyNearest[static_cast<size_t>(minIndex)].index;
+    greedyNearest[static_cast<size_t>(j)].distance = Euclerian(static_cast<size_t>(j), static_cast<size_t>(greedyNearest[static_cast<size_t>(j)].index));
+    greedyNearest[static_cast<size_t>(j)].k = true;
+    //Reatch the old point
+    greedyNearest[static_cast<size_t>(minIndex)].index = j;
+    greedyNearest[static_cast<size_t>(minIndex)].distance = Euclerian(static_cast<size_t>(minIndex), static_cast<size_t>(j));
   }
   for (int i = 0; i < static_cast<int>(NodeCount); i++) {
-    weightTSP += greedyNearest[i].distance;
+    weightTSP += greedyNearest[static_cast<size_t>(i)].distance;
   }
 }
 
