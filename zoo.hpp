@@ -51,6 +51,17 @@ public:
 
   void partB();
 
+  // PartC: functions
+  double connectingArms(size_t permLength);
+
+  double unvistedMST(size_t permLength);
+
+  bool promising(size_t permLength);
+
+  double calculateCurrCost(size_t permLength);
+
+  void genPerms(size_t permLength);
+
   void partC();
 
 private:
@@ -66,4 +77,11 @@ private:
   // Part B:
   std::vector<PrimData> greedyNearest;
   double weightTSP;
+
+  // Part C: Variables
+  std::vector<size_t> pathBuilding;
+  // Running total
+  double currPathLength;
+  std::vector<size_t> bestPathSeen;
+  double lengthOfBestPath;
 };

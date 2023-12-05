@@ -11,7 +11,7 @@
             "program": "${workspaceFolder}/zoo_debug",
             "args": [
                 "-m",
-                "FASTTSP"
+                "OPTTSP"
             ],
             "stdio": [
                 "sample-e.txt",

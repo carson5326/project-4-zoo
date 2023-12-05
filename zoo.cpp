@@ -88,7 +88,8 @@ void Zoo::chooseAlgorithm() {
     partB();
     printFASTTSP();
   } else
-    partC();
+    greedyNearest.resize(NodeCount, PrimData());
+  partC();
 }
 
 double Zoo::Euclerian(size_t vertice1, size_t vertice2) {
@@ -156,7 +157,7 @@ void Zoo::solveMST() {
     // 4. For each vertex w adjact to v for which kw is false, check whether dw
     // is greater than the edge weight that connects v and w. If it is, set d to
     // the weight of thee edge that connects v and w, and set p to vertex v.
-    //int count = 0; FORGOT WHAT THESE ARE FOR
+    // int count = 0; FORGOT WHAT THESE ARE FOR
     for (size_t a = 0; a < NodeCount; a++) {
       // check that the vertice is false, and if the distance is less than
       if (!primTable[a].k) {
@@ -166,8 +167,8 @@ void Zoo::solveMST() {
         if (distance != -1 && distance < primTable[a].distance) {
           primTable[a].distance = distance;
           primTable[a].index = smallestIndex;
-        } //else if (distance != -1)
-          //count++; FORGOT WHAT THESE ARE FOR
+        } // else if (distance != -1)
+          // count++; FORGOT WHAT THESE ARE FOR
       }
     }
     // returns error if there was no adjacent .
@@ -184,52 +185,26 @@ void Zoo::printMST() {
   }
 }
 
+// void Zoo::printFASTTSP() {
+//   std::cout << std::fixed << std::setprecision(2) << weightTSP << "\n";
+//   int curr = 0;
+//   std::cout << 0;
+//   curr = greedyNearest[0].index;
+//   while (curr != 0) {
+//     std::cout << " " << curr;
+//     curr = greedyNearest[static_cast<size_t>(curr)].index;
+//   }
+//   std::cout << "\n";
+// }
+
 void Zoo::printFASTTSP() {
   std::cout << std::fixed << std::setprecision(2) << weightTSP << "\n";
-  int curr = 0;
-  std::cout << 0;
-  curr = greedyNearest[0].index;
-  while (curr != 0) {
-    std::cout << " " << curr;
-    curr = greedyNearest[static_cast<size_t>(curr)].index;
+  std::cout << bestPathSeen[0];
+  for (size_t i = 1; i < bestPathSeen.size(); i++) {
+    std::cout << " " << bestPathSeen[i];
   }
   std::cout << "\n";
 }
-
-// void Zoo::partB() {
-//   uint32_t curr = 0;
-//   greedyNearest[0].distance = 0;
-//   greedyNearest[0].k = true;
-//   while (true) {
-//     // go thorugh each point and find the closest
-//     double smallestDistance = -1;
-//     int smallestIndex = -1;
-//     for (int i = 0; i < static_cast<int>(NodeCount); i++) {
-//       if (!greedyNearest[i].k) {
-//         double distance = Euclerian(curr, i);
-//         if (smallestDistance == -1) {
-//           smallestDistance = distance;
-//           smallestIndex = i;
-//         } else if (Euclerian(curr, i) < smallestDistance) {
-//           smallestDistance = distance;
-//           smallestIndex = i;
-//         }
-//       }
-//     }
-//     // Check if there is no more closest
-//     if (smallestIndex == -1)
-//       break;
-//     greedyNearest[smallestIndex].distance = smallestDistance;
-//     greedyNearest[smallestIndex].k = true;
-//     greedyNearest[smallestIndex].index = curr;
-//     weightTSP += smallestDistance;
-//     curr = static_cast<uint32_t>(smallestIndex);
-//   }
-//   // connect the ends
-//   greedyNearest[0].distance = Euclerian(curr, 0);
-//   greedyNearest[0].index = curr;
-//   weightTSP += greedyNearest[0].distance;
-// }
 
 void Zoo::partB() {
   // 1. Initialize a partial tour with a vertexx i, chosen arbitrarily
@@ -250,58 +225,193 @@ void Zoo::partB() {
   for (int j = 2; j < static_cast<int>(NodeCount); j++) {
     // Loops through all the possible options
     for (int i = 0; i < size; i++) {
-      //Calculate the minDistance it would be if you were to reconnect. First connection between where your checking and new vertex. Second: vertex distance from where the 
-      //where you checking is point to and new vertex.
-      double totalDistance = Euclerian(static_cast<size_t>(j), static_cast<size_t>(i)) +
-                             Euclerian(static_cast<size_t>(j), static_cast<size_t>(greedyNearest[static_cast<size_t>(i)].index)) - greedyNearest[static_cast<size_t>(i)].distance;
-                             //Euclerian(static_cast<size_t>(i), static_cast<size_t>(greedyNearest[static_cast<size_t>(i)].index));
-      //Make sure a vertex cant create a path to self
+      // Calculate the minDistance it would be if you were to reconnect. First
+      // connection between where your checking and new vertex. Second: vertex
+      // distance from where the where you checking is point to and new vertex.
+      double totalDistance =
+          Euclerian(static_cast<size_t>(j), static_cast<size_t>(i)) +
+          Euclerian(static_cast<size_t>(j),
+                    static_cast<size_t>(
+                        greedyNearest[static_cast<size_t>(i)].index)) -
+          greedyNearest[static_cast<size_t>(i)].distance;
+      // Euclerian(static_cast<size_t>(i),
+      // static_cast<size_t>(greedyNearest[static_cast<size_t>(i)].index));
+      // Make sure a vertex cant create a path to self
       if (i != j) {
-        //Initalize the first value
+        // Initalize the first value
         if (i == 0) {
           minDistance = totalDistance;
           minIndex = i;
         }
-        //Find the smallest Distance.
+        // Find the smallest Distance.
         else if (minDistance > totalDistance) {
           minDistance = totalDistance;
           minIndex = i;
         }
       }
     }
-      size++;
-    //Now connect everything after finding the smallest Distance.
-    //Start by setting the values of the vertex
-    greedyNearest[static_cast<size_t>(j)].index = greedyNearest[static_cast<size_t>(minIndex)].index;
-    greedyNearest[static_cast<size_t>(j)].distance = Euclerian(static_cast<size_t>(j), static_cast<size_t>(greedyNearest[static_cast<size_t>(j)].index));
+    size++;
+    // Now connect everything after finding the smallest Distance.
+    // Start by setting the values of the vertex
+    greedyNearest[static_cast<size_t>(j)].index =
+        greedyNearest[static_cast<size_t>(minIndex)].index;
+    greedyNearest[static_cast<size_t>(j)].distance = Euclerian(
+        static_cast<size_t>(j),
+        static_cast<size_t>(greedyNearest[static_cast<size_t>(j)].index));
     greedyNearest[static_cast<size_t>(j)].k = true;
-    //Reatch the old point
+    // Reatch the old point
     greedyNearest[static_cast<size_t>(minIndex)].index = j;
-    greedyNearest[static_cast<size_t>(minIndex)].distance = Euclerian(static_cast<size_t>(minIndex), static_cast<size_t>(j));
+    greedyNearest[static_cast<size_t>(minIndex)].distance =
+        Euclerian(static_cast<size_t>(minIndex), static_cast<size_t>(j));
   }
   for (int i = 0; i < static_cast<int>(NodeCount); i++) {
     weightTSP += greedyNearest[static_cast<size_t>(i)].distance;
   }
+  int curr = 0;
+  bestPathSeen.push_back(0);
+  curr = greedyNearest[0].index;
+  while (curr != 0) {
+    bestPathSeen.push_back(curr);
+    curr = greedyNearest[static_cast<size_t>(curr)].index;
+  }
 }
 
-// void Zoo::twoOpt() {
-//   double bestDistance = weightTotal;
-//   bool improvement = true;
-//   while (improvement) {
-//     improvement = false;
-//     for (size_t i = 0; i < NodeCount - 2; i++) {
-//       for (size_t j = i + 2; j < NodeCount; j++) {
-//         double change = Euclerian(i, j) + Euclerian(i + 1, j + 1) -
-//                         Euclerian(i, i + 1) - Euclerian(j, j + 1);
-//         if (change < 0) {
-//           std::reverse(greedyNearest.begin() + i + 1,
-//                        greedyNearest.begin() + j);
-//           bestDistance = bestDistance + change;
-//           improvement = true;
-//         }
-//       }
-//     }
-//   }
-// }
+double Zoo::calculateCurrCost(size_t permLength) {
+  double totalcost = 0;
+  for (size_t i = 0; i < permLength - 1; i++) {
+    totalcost += Euclerian(i, i + 1);
+  }
+  return totalcost;
+}
 
-void Zoo::partC() { return; }
+double Zoo::connectingArms(size_t permLength) {
+  // beginning vertex = 0
+  // final vertex - permLength - 1
+  double minValue = -1;
+  for (size_t i = permLength; i < pathBuilding.size(); i++) {
+    // Initalizes minValue, length of first arm (first vertex) + length of
+    // second arm (final vertex)
+    double value = Euclerian(pathBuilding[i], 0) +
+                   Euclerian(pathBuilding[i], permLength - 1);
+    if (i == permLength)
+      minValue = value;
+    else if (minValue > value)
+      minValue = value;
+  }
+  return minValue;
+}
+
+double Zoo::unvistedMST(size_t permLength) {
+  size_t count = bestPathSeen.size() - permLength;
+  // resize so it fits.
+  std::vector<PrimData> primTable;
+  primTable.resize(count, PrimData());
+  // primTable.resize(count, PrimData());
+  primTable[0].distance = 0;
+  double weightMST = 0;
+  while (true) {
+    int smallestIndex = -1;
+    double smallestDistance = -1;
+    for (size_t j = 0; j < count; j++) {
+      // If smallestDistance is unitalized
+      if (smallestDistance == -1 && !primTable[j].k) {
+        smallestIndex = static_cast<int>(j);
+        smallestDistance = primTable[j].distance;
+      } else if (!primTable[j].k && primTable[j].distance < smallestDistance) {
+        smallestIndex = static_cast<int>(j);
+        smallestDistance = primTable[j].distance;
+      }
+    }
+    if (smallestIndex == -1)
+      break;
+    primTable[static_cast<size_t>(smallestIndex)].k = true;
+    //! This is wrong because im not changing the smallestDistance
+    weightMST += primTable[static_cast<size_t>(smallestIndex)].distance;
+    for (size_t a = 0; a < count; a++) {
+      // check that the vertice is false, and if the distance is less than
+      if (!primTable[a].k) {
+        double distance = Euclerian(permLength + smallestIndex, permLength + a);
+        // Checks that is valid and if so it is less than current distance. If
+        // so change distance and change index.
+        if (distance < primTable[a].distance) {
+          primTable[a].distance = distance;
+          primTable[a].index = smallestIndex;
+        } // else if (distance != -1)
+          // count++; FORGOT WHAT THESE ARE FOR
+      }
+    }
+  }
+  return weightMST;
+}
+
+bool Zoo::promising(size_t permLength) {
+  if (permLength <= 4)
+    return true;
+  double unvistedMSTs = unvistedMST(permLength);
+  double arms = connectingArms(permLength);
+  double test = unvistedMSTs + arms + currPathLength;
+  std::cout << "k: " << permLength << " currcost: " << currPathLength
+            << " MST: " << unvistedMSTs << " arms: " << arms
+            << " Total: " << test << " Best: " << lengthOfBestPath << "\n";
+  return ((unvistedMSTs + arms + currPathLength) < lengthOfBestPath);
+}
+
+void Zoo::genPerms(size_t permLength) {
+  // We have reached leaf node everything has been fixed
+  if (permLength == pathBuilding.size()) {
+    // Do something with the path
+    // get total path length totalpath length < bestSoFar.
+    // currCost += (closing edge)
+    currPathLength += Euclerian(0, pathBuilding.size() - 1);
+    // Check if it's better
+    if (currPathLength < lengthOfBestPath) {
+      lengthOfBestPath = currPathLength;
+      // copy over the values to best path seen
+      for (size_t i = 0; i < bestPathSeen.size(); i++) {
+        std::cout << "size best Path:" << bestPathSeen.size();
+        std::cout << "size best Path:" << bestPathSeen.size();
+        bestPathSeen[i] = pathBuilding[i];
+      }
+    }
+    //  update things (best path and best cost are changed)
+    // currCost -= (closing edge) (should be close to 0 or 0 at the end)
+    currPathLength -= Euclerian(0, pathBuilding.size() - 1);
+    return;
+  } // if ..complete path
+  // If not promising go back and make another choice
+  if (!promising(permLength)) {
+    return;
+  } // if ..not promising
+
+  for (size_t i = permLength; i < lengthOfBestPath; ++i) {
+    // Pick someone new to be part of the path
+    std::swap(pathBuilding[permLength], pathBuilding[i]);
+    // curCost =+ (cost of the new edge) (a,b,c) (a+ b) + (b + c) Use perm
+    currPathLength += calculateCurrCost(permLength);
+    // length to help with index.
+    genPerms(permLength + 1);
+    // currCost -= (cost of that same edge)
+    currPathLength -= calculateCurrCost(permLength);
+    std::swap(pathBuilding[permLength], pathBuilding[i]);
+  } // for ..unpermuted elements
+}
+
+void Zoo::partC() {
+  // builds bestPathSeen and best length.
+  partB();
+  lengthOfBestPath = weightTSP;
+  // Add zero to the start
+  for (auto x : bestPathSeen) {
+    pathBuilding.push_back(x);
+  }
+  currPathLength = 0;
+  // start the genPerms
+  genPerms(1);
+  std::cout << lengthOfBestPath << "\n";
+  std::cout << bestPathSeen[0];
+  for (size_t i = 1; i < bestPathSeen.size(); i++) {
+    std::cout << " " << bestPathSeen[i];
+  }
+  std::cout << "\n";
+  return;
+}
